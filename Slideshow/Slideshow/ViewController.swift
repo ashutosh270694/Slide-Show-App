@@ -8,6 +8,8 @@
 import UIKit
 
 class ViewController: UIViewController {
+   
+    
         
     @IBOutlet weak var collectionView: UICollectionView!
     
@@ -19,6 +21,13 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        photoViewModel.delegate = self
+        setupAndTriggerImageDownload()
+    }
+    
+    // MARK: Setup Methods
+    func setupAndTriggerImageDownload() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             NetworkManager().fetchData { photoResponse, error in
                 
@@ -29,32 +38,14 @@ class ViewController: UIViewController {
                 
                 DispatchQueue.main.async {
                     self.photoViewModel.photos = photoResponse?.photos.photo ?? []
-                    self.collectionView.reloadData()
-                    self.collectionView.performBatchUpdates {
-                        
-                    } completion: { isCollectionViewUpdated in
+//                    self.collectionView.performBatchUpdates {
+                        self.collectionView.reloadData()
+//                    } completion: { isCollectionViewUpdated in
                         // Do nothing
-                    }
+                        self.photoViewModel.initiateImageDownload()
+//                    }
                 }
             }
-        }
-    }
-    
-    
-    func fetchFirstThreeImages(onCompletion: @escaping () -> ()) {
-        let group = DispatchGroup()
-        for i in 0..<3 {
-            group.enter()
-            NetworkManager().downloadImage(url: photoViewModel.photos[i].urlN) { [weak self] image in
-                self?.photoViewModel.photos[i].image = image
-                print("Downloaded \(i) Image")
-                group.leave()
-            }
-        }
-        
-        group.notify(queue: DispatchQueue.main) {
-            print("All the images downloaded")
-            onCompletion()
         }
     }
 }
@@ -83,4 +74,11 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         return CGSize(width: photo.widthN, height: photo.heightN)
     }
     
+}
+
+extension ViewController: PhotoDownloadDelegate {
+    
+    func didDownloadImages(from startIndex: Int, endIndex: Int) {
+         
+    }
 }

@@ -12,7 +12,7 @@ class PhotoViewModel {
     var batchSize = 3
     var startIndex = 0
     var endIndex = 3
-    
+        
     func fetchBatchImage(startIndex: Int, endIndex: Int, onCompletion: @escaping () -> ()) {
         
         let group = DispatchGroup()
@@ -26,7 +26,7 @@ class PhotoViewModel {
         }
         
         group.notify(queue: DispatchQueue.main) {
-            print("All the images downloaded")
+            print("Images Downloaded for Photos from index: \(startIndex) to \(endIndex - 1)")
             onCompletion()
         }
     }
@@ -41,26 +41,13 @@ class PhotoViewModel {
             guard let self = self else { return }
             
             self.startIndex = self.endIndex
-            self.endIndex = self.endIndex + self.batchSize
+            
+            var newEndIndex = self.endIndex + self.batchSize
+            if newEndIndex > self.photos.count {
+                newEndIndex = self.photos.count
+            }
+            
+            self.endIndex = newEndIndex
         }
     }
-//
-//    func fetchFirstThreeImages(onCompletion: @escaping () -> ()) {
-//        let group = DispatchGroup()
-//        for i in 0..<3 {
-//            group.enter()
-//            NetworkManager().downloadImage(url: photos[i].urlN) { [weak self] image in
-//                self?.photos[i].image = image
-//                print("Downloaded \(i) Image")
-//                group.leave()
-//            }
-//        }
-//
-//        group.notify(queue: DispatchQueue.main) {
-//            print("All the images downloaded")
-//            onCompletion()
-//        }
-//    }
-    
-    
 }
