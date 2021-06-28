@@ -16,13 +16,13 @@ class ViewController: UIViewController {
 //    var photos: [Photo] = []
     
     var startingBatchIndex = 0
-    var photoViewModel = PhotoViewModel()
+    var photoViewModel: PhotoViewModel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        photoViewModel.delegate = self
+        photoViewModel = PhotoViewModel(maxHeight: Double(collectionView.bounds.size.height), maxWidth: Double(collectionView.bounds.size.width))
         setupAndTriggerImageDownload()
     }
     
@@ -74,11 +74,4 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         return CGSize(width: photo.widthN, height: photo.heightN)
     }
     
-}
-
-extension ViewController: PhotoDownloadDelegate {
-    
-    func didDownloadImages(from startIndex: Int, endIndex: Int) {
-         
-    }
 }

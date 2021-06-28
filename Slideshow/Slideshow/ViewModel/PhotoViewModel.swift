@@ -8,10 +8,18 @@
 import Foundation
 
 class PhotoViewModel {
+    
+    var maxHeight: Double = 0
+    var maxWidth: Double = 0
     var photos: [Photo] = []
     var batchSize = 3
     var startIndex = 0
     var endIndex = 3
+    
+    init(maxHeight: Double, maxWidth: Double) {
+        self.maxHeight = maxHeight
+        self.maxWidth = maxWidth
+    }
         
     func fetchBatchImage(startIndex: Int, endIndex: Int, onCompletion: @escaping () -> ()) {
         
@@ -36,13 +44,17 @@ class PhotoViewModel {
         timer.fire()
     }
     
+    func getNextBatchSize() -> Int {
+        return 3
+    }
+    
     @objc func downloadImageBatch() {
         fetchBatchImage(startIndex: startIndex, endIndex: endIndex) { [weak self] in
             guard let self = self else { return }
             
             self.startIndex = self.endIndex
             
-            var newEndIndex = self.endIndex + self.batchSize
+            var newEndIndex = self.endIndex + self.getNextBatchSize()
             if newEndIndex > self.photos.count {
                 newEndIndex = self.photos.count
             }
