@@ -6,29 +6,43 @@
 //
 
 import Foundation
+import UIKit
 
-class PhotoViewModel {
+protocol ImageFetchBatching {
+    associatedtype Photo
     
-    var maxHeight: Double = 0
-    var maxWidth: Double = 0
+    var maxHeight: CGFloat { get set }
+    var maxWidth: CGFloat { get set }
+    var batchSize: Int { get set }
+    var nextBatchSize: Int { get set }
+}
+
+final class PhotoViewModel {
+    
+    var imageManager: ImageDataManager
+    
+    private var maxHeight: CGFloat = 0
+    private var maxWidth: CGFloat = 0
     var photos: [Photo] = []
     var batchSize = 3
     var startIndex = 0
     var endIndex = 3
     
-    init(maxHeight: Double, maxWidth: Double) {
-        self.maxHeight = maxHeight
-        self.maxWidth = maxWidth
+    private var timer: Timer?
+    var didUpdateImageBatch: ((Int, Int) -> ())?
+    
+    init(maxSize: CGSize, imageManager: ImageDataManager) {
+        self.maxHeight = maxSize.height
+        self.maxWidth = maxSize.width
+        self.imageManager = imageManager
     }
         
     func fetchBatchImage(startIndex: Int, endIndex: Int, onCompletion: @escaping () -> ()) {
-        
         let group = DispatchGroup()
         for i in startIndex..<endIndex {
             group.enter()
-            NetworkManager().downloadImage(url: photos[i].urlN) { [weak self] image in
-                self?.photos[i].image = image
-                print("Downloaded \(i) Image")
+            
+            imageManager.getImage(url: self.photos[i].urlN) { _, _ in
                 group.leave()
             }
         }
@@ -45,12 +59,31 @@ class PhotoViewModel {
     }
     
     func getNextBatchSize() -> Int {
-        return 3
+        var i = endIndex
+        var currentSize: CGFloat = 0
+        var batchSize = 0
+        while CGFloat(photos[i].widthN) < maxWidth && CGFloat(photos[i].heightN) < maxHeight && i < photos.count && currentSize < maxHeight{
+            currentSize += CGFloat(photos[i].heightN)
+            batchSize += 1
+            i += 1
+        }
+        
+        print("Current Batch Size: \(batchSize)")
+        
+        return batchSize
     }
     
     @objc func downloadImageBatch() {
+        guard startIndex < photos.count else {
+            timer?.invalidate()
+            timer = nil
+            return
+        }
+        
         fetchBatchImage(startIndex: startIndex, endIndex: endIndex) { [weak self] in
             guard let self = self else { return }
+            
+            self.didUpdateImageBatch?(self.startIndex, self.endIndex)
             
             self.startIndex = self.endIndex
             

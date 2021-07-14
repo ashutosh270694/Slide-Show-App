@@ -22,7 +22,18 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        photoViewModel = PhotoViewModel(maxHeight: Double(collectionView.bounds.size.height), maxWidth: Double(collectionView.bounds.size.width))
+        photoViewModel = PhotoViewModel(maxSize: collectionView.bounds.size, imageManager: ImageDataManager())
+        
+        photoViewModel.didUpdateImageBatch = { [weak self] startIndex, endIndex in
+            
+            let newBatchStartIndexPath = IndexPath(item: startIndex, section: 0)
+            self?.collectionView.scrollToItem(at: newBatchStartIndexPath, at: .top, animated: true)
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
         setupAndTriggerImageDownload()
     }
     
@@ -38,12 +49,8 @@ class ViewController: UIViewController {
                 
                 DispatchQueue.main.async {
                     self.photoViewModel.photos = photoResponse?.photos.photo ?? []
-//                    self.collectionView.performBatchUpdates {
-                        self.collectionView.reloadData()
-//                    } completion: { isCollectionViewUpdated in
-                        // Do nothing
-                        self.photoViewModel.initiateImageDownload()
-//                    }
+                    self.collectionView.reloadData()
+                    self.photoViewModel.initiateImageDownload()
                 }
             }
         }

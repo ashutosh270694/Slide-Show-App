@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 class FlickrImageCell: UICollectionViewCell {
     
     @IBOutlet weak var imgView: UIImageView!
@@ -16,12 +17,13 @@ class FlickrImageCell: UICollectionViewCell {
     }
      
     func configureCell(photo: Photo) {
-        imgView.image = photo.image
-        photo.setupDidUpdateImage { [weak self] image in
-            DispatchQueue.main.async {
-                self?.imgView.image = image
-            }
-        }
+        imgView.setImage(url: photo.urlN)
+        
+//        photo.setupDidUpdateImage { [weak self] image in
+//            DispatchQueue.main.async {
+//                self?.imgView.image = image
+//            }
+//        }
     }
 }
 
